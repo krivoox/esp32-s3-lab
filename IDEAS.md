@@ -12,7 +12,8 @@ BOOT → siguiente modo
 |---|--------|--------|
 | 1 | **Cursor Buddy** | Hecho — eventos + globo + barras de uso Pro |
 | 2 | **Keyboard Presence Detector** | Hecho — heatmap + WPM + idle + mini buddy |
-| 3 | Reloj / otros | Pendiente |
+| 3 | **Trello Buddy** | Hecho — In Progress + due/overdue |
+| 4 | Reloj / otros | Pendiente |
 
 ---
 

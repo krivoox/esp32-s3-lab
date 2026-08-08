@@ -12,6 +12,7 @@
 #include "keyboard_presence.h"
 #include "qmi8658.h"
 #include "secrets.h"
+#include "trello_board.h"
 
 namespace {
 
@@ -30,7 +31,8 @@ CRGB led;
 enum class Slide : uint8_t {
   CursorBuddy = 0,
   KeyboardPresence = 1,
-  Count = 2,
+  Trello = 2,
+  Count = 3,
 };
 
 enum class Gesture : uint8_t {
@@ -353,7 +355,13 @@ void handleRoot() {
   html += "ip: ";
   html += WiFi.localIP().toString();
   html += "\nslide: ";
-  html += (slide == Slide::CursorBuddy) ? "cursor" : "keyboard";
+  if (slide == Slide::CursorBuddy) {
+    html += "cursor";
+  } else if (slide == Slide::KeyboardPresence) {
+    html += "keyboard";
+  } else {
+    html += "trello";
+  }
   html += "\nstatus: ";
   html += status_line;
   html += "\nkeys_today: ";
@@ -362,6 +370,10 @@ void handleRoot() {
   html += String(usage_cursor_pct);
   html += "/";
   html += String(usage_other_pct);
+  html += "\ntrello progress/due: ";
+  html += String(trello::nProgress());
+  html += "/";
+  html += String(trello::nDue());
   html += "</pre></body></html>";
   server.send(200, "text/html", html);
 }
@@ -484,6 +496,82 @@ void handleUsage() {
   server.send(200, "application/json", "{\"ok\":true}");
 }
 
+void handleTrello() {
+  if (server.method() == HTTP_OPTIONS) {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+    server.send(204);
+    return;
+  }
+
+  String body = server.arg("plain");
+  if (!body.length()) {
+    body = server.arg("body");
+  }
+
+  auto argOrJson = [&](const char* key) -> String {
+    if (server.hasArg(key)) {
+      return server.arg(key);
+    }
+    return jsonGet(body, key);
+  };
+
+  const uint8_t np = static_cast<uint8_t>(constrain(argOrJson("np").toInt(), 0, 99));
+  const uint8_t nd = static_cast<uint8_t>(constrain(argOrJson("nd").toInt(), 0, 99));
+  const uint8_t no = static_cast<uint8_t>(constrain(argOrJson("no").toInt(), 0, 99));
+
+  trello::Item progress[trello::MAX_ITEMS];
+  trello::Item due[trello::MAX_ITEMS];
+  memset(progress, 0, sizeof(progress));
+  memset(due, 0, sizeof(due));
+
+  uint8_t pc = 0;
+  uint8_t dc = 0;
+  for (uint8_t i = 0; i < trello::MAX_ITEMS; ++i) {
+    char key[8];
+    snprintf(key, sizeof(key), "p%u", static_cast<unsigned>(i));
+    String title = argOrJson(key);
+    if (!title.length()) {
+      break;
+    }
+    strncpy(progress[pc].title, title.c_str(), trello::TITLE_LEN - 1);
+    snprintf(key, sizeof(key), "p%ud", static_cast<unsigned>(i));
+    String due_s = argOrJson(key);
+    strncpy(progress[pc].due, due_s.c_str(), trello::DUE_LEN - 1);
+    snprintf(key, sizeof(key), "p%uo", static_cast<unsigned>(i));
+    progress[pc].overdue = argOrJson(key).toInt() != 0;
+    ++pc;
+  }
+  for (uint8_t i = 0; i < trello::MAX_ITEMS; ++i) {
+    char key[8];
+    snprintf(key, sizeof(key), "d%u", static_cast<unsigned>(i));
+    String title = argOrJson(key);
+    if (!title.length()) {
+      break;
+    }
+    strncpy(due[dc].title, title.c_str(), trello::TITLE_LEN - 1);
+    snprintf(key, sizeof(key), "d%ud", static_cast<unsigned>(i));
+    String due_s = argOrJson(key);
+    strncpy(due[dc].due, due_s.c_str(), trello::DUE_LEN - 1);
+    snprintf(key, sizeof(key), "d%uo", static_cast<unsigned>(i));
+    due[dc].overdue = argOrJson(key).toInt() != 0;
+    ++dc;
+  }
+
+  trello::apply(np, nd, no, progress, pc, due, dc);
+
+  if (no > 0) {
+    setStatus("trello", "overdue!");
+    startGesture(Gesture::Think, 2000);
+  } else if (nd > 0) {
+    setStatus("trello", "due soon");
+  }
+
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "application/json", "{\"ok\":true}");
+}
+
 void handleNotFound() {
   server.send(404, "text/plain", "not found");
 }
@@ -551,6 +639,9 @@ bool connectWifi() {
   server.on("/usage", HTTP_POST, handleUsage);
   server.on("/usage", HTTP_GET, handleUsage);
   server.on("/usage", HTTP_OPTIONS, handleUsage);
+  server.on("/trello", HTTP_POST, handleTrello);
+  server.on("/trello", HTTP_GET, handleTrello);
+  server.on("/trello", HTTP_OPTIONS, handleTrello);
   server.onNotFound(handleNotFound);
   server.begin();
   return true;
@@ -662,6 +753,7 @@ void setup() {
   gfx->begin();
 
   keyboard::begin();
+  trello::begin();
   imu_ok = imu.begin(Wire, PIN_I2C_SDA, PIN_I2C_SCL);
   wifi_ok = connectWifi();
 
@@ -720,9 +812,17 @@ void loop() {
 
   if (now < slide_banner_until) {
     gfx->fillScreen(COL_BG);
-    drawSlideBanner(slide == Slide::CursorBuddy ? "Cursor" : "Keys");
+    const char* title = "Cursor";
+    if (slide == Slide::KeyboardPresence) {
+      title = "Keys";
+    } else if (slide == Slide::Trello) {
+      title = "Trello";
+    }
+    drawSlideBanner(title);
   } else if (slide == Slide::KeyboardPresence) {
     keyboard::draw(gfx, LCD_WIDTH, LCD_HEIGHT, now, wifi_ok, ip_line);
+  } else if (slide == Slide::Trello) {
+    trello::draw(gfx, LCD_WIDTH, LCD_HEIGHT, now, wifi_ok, ip_line);
   } else {
     drawCursorBuddy(now);
   }
@@ -738,6 +838,12 @@ void loop() {
       led = CRGB(bri, bri / 2, 0);
     } else {
       led = CRGB(bri / 3, bri / 3, bri / 3);
+    }
+  } else if (slide == Slide::Trello) {
+    if (trello::nOverdue() > 0) {
+      led = CRGB(bri, bri / 5, 0);
+    } else {
+      led = CRGB(0, bri / 3, bri);
     }
   } else {
     led = wifi_ok ? CRGB(bri, bri, bri) : CRGB(bri, bri / 3, 0);

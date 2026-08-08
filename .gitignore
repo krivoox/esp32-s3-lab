@@ -6,3 +6,4 @@
 .DS_Store
 include/secrets.h
 tools/.venv/
+tools/trello.json
