@@ -15,6 +15,7 @@ static constexpr int PIN_I2C_SDA = 48;
 static constexpr int PIN_I2C_SCL = 47;
 
 static constexpr int PIN_RGB = 38;
+static constexpr int PIN_BOOT = 0;  // botón BOOT → siguiente slide
 
 static constexpr int LCD_WIDTH = 172;
 static constexpr int LCD_HEIGHT = 320;
