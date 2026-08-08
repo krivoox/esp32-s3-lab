@@ -71,7 +71,7 @@ def load_trello_cfg() -> dict:
             "1) Key:  https://trello.com/power-ups/admin  → New → Generate API key\n"
             "2) Token: en esa misma página, 'Token' → Allow (copiá el token)\n"
             "3) board: nombre exacto de tu tablero (o su id)\n"
-            "4) Volvé a correr: ./tools/run-trello.sh --once"
+            "4) Volvé a correr: ./tools/trello/run.sh --once"
         )
     cfg["key"] = key
     cfg["token"] = token

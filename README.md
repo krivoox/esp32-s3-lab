@@ -61,6 +61,8 @@ Pollers (Mac):
 ./tools/trello/run.sh --demo --once
 ```
 
+Docs de cada tool: [`tools/README.md`](tools/README.md).
+
 La IP aparece en la LCD. Opcional: `~/.cursor/esp32-buddy.json`.
 
 ## Estructura

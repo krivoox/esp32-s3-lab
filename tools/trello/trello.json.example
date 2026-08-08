@@ -2,6 +2,6 @@
   "key": "TU_TRELLO_API_KEY",
   "token": "TU_TRELLO_TOKEN",
   "board": "Nombre de tu board",
-  "in_progress_lists": ["In Progress", "Hecho", "Doing", "En progreso", "WIP"],
+  "in_progress_lists": ["In Progress", "Doing", "En progreso", "WIP"],
   "due_within_days": 7
 }
