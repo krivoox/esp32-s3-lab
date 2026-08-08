@@ -1,0 +1,45 @@
+---
+description: Convenciones del lab ESP32-S3 Buddy (siempre)
+alwaysApply: true
+---
+
+# ESP32-S3 Lab — steering
+
+## Estructura
+
+- Cada **view** vive en `src/views/<nombre>/` con su propio `README.md`.
+- Hardware compartido en `src/core/`.
+- Pollers / listeners en `tools/<nombre>/` con `README.md` + `run.sh`.
+- Orquestación (Wi‑Fi, HTTP, BOOT, loop) en `src/main.cpp`.
+
+## Secretos
+
+- Nunca hardcodear Wi‑Fi, tokens Trello, ni access tokens de Cursor.
+- Usar solo `*.example` en git; secretos reales fuera del repo (`include/secrets.h`, `~/.cursor/*.json`).
+- Antes de commit: revisar `git status` y que no haya `secrets.h` / `trello.json` reales.
+
+## Firmware
+
+- Board: Waveshare ESP32-S3-LCD-1.47B (pins en `src/core/board_pins.h`).
+- GFX pinneada a Arduino_GFX **1.4.9**.
+- Wi‑Fi debe ser **2.4 GHz**.
+- BOOT = siguiente slide; no usar RESET como navegación.
+
+## Al añadir una view / visual nueva (obligatorio)
+
+Toda pantalla nueva en la LCD **entra al carrusel BOOT** y se organiza así:
+
+1. `src/views/<nombre>/` — código de la view (no dejarla suelta solo en `main.cpp`).
+2. `src/views/<nombre>/README.md` — qué muestra, archivos, endpoints, privacidad.
+3. Registrar en `enum class Slide` + draw/banner/LED en `src/main.cpp`.
+4. `-Isrc/views/<nombre>` en `platformio.ini`.
+5. Actualizar `README.md` (tabla de views) y docs si hace falta.
+6. Si hay datos de Mac: `tools/<nombre>/` con README + `run.sh` + example sin secretos.
+
+Detalle: `.cursor/rules/new-view-slide.mdc`.
+
+## Al añadir otras features
+
+1. Preferir endpoints HTTP JSON/query simples compatibles con el parser actual.
+2. No hardcodear secretos.
+3. Responder en español si el usuario habla español.

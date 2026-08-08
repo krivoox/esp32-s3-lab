@@ -591,7 +591,7 @@ bool connectWifi() {
     const String ssid = WiFi.SSID(i);
     Serial.printf("  [%d] %s  rssi=%d  ch=%d\n", i, ssid.c_str(), WiFi.RSSI(i),
                   WiFi.channel(i));
-    if (ssid == WIFI_SSID || ssid.indexOf("jmkrivo") >= 0) {
+    if (ssid == WIFI_SSID) {
       saw_target = true;
     }
   }

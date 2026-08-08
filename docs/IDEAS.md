@@ -10,9 +10,9 @@ BOOT → siguiente modo
 
 | # | Slide | Estado |
 |---|--------|--------|
-| 1 | **Cursor Buddy** | Hecho — eventos + globo + barras de uso Pro |
-| 2 | **Keyboard Presence Detector** | Hecho — heatmap + WPM + idle + mini buddy |
-| 3 | **Trello Buddy** | Hecho — In Progress + due/overdue |
+| 1 | **Cursor Buddy** | Hecho — [`src/views/cursor_buddy/`](../src/views/cursor_buddy/) |
+| 2 | **Keyboard Presence Detector** | Hecho — [`src/views/keyboard/`](../src/views/keyboard/) |
+| 3 | **Trello Buddy** | Hecho — [`src/views/trello/`](../src/views/trello/) |
 | 4 | Reloj / otros | Pendiente |
 
 ---
@@ -45,10 +45,14 @@ Privacidad: solo conteos, **nunca el texto**.
 
 ```bash
 pip3 install pynput
-python3 tools/keyboard_presence.py
+python3 tools/keyboard_presence/keyboard_presence.py
 # o demo sin Accessibility:
-python3 tools/keyboard_presence.py --demo
+python3 tools/keyboard_presence/keyboard_presence.py --demo
 ```
 
 Estado local: `~/.cursor/keyboard-presence.json`  
 URL: lee `~/.cursor/esp32-buddy.json` (misma IP que Cursor Buddy).
+
+### Trello
+
+Ver [`tools/trello/README.md`](../tools/trello/README.md).

@@ -5,5 +5,7 @@
 .vscode/ipch
 .DS_Store
 include/secrets.h
-tools/.venv/
-tools/trello.json
+tools/**/.venv/
+tools/**/trello.json
+**/.env
+**/.env.*

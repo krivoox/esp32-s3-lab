@@ -1,41 +1,100 @@
-# ESP32-S3 Lab — Cursor Buddy + Keyboard + Trello
+<p align="center">
+  <img src="docs/assets/banner.png" alt="ESP32-S3 Lab — desk companion firmware" width="100%" />
+</p>
 
-Waveshare **ESP32-S3-LCD-1.47B**: carrusel de slides con **BOOT**.
+<h1 align="center">ESP32-S3 Lab</h1>
 
-| BOOT | Slide |
-|------|--------|
-| 1 | **Cursor Buddy** — eventos del Agent + barras Pro |
-| 2 | **Keyboard Presence** — tipado, WPM, idle, heatmap |
-| 3 | **Trello** — In Progress + vencimientos |
+<p align="center">
+  <strong>Desk companion</strong> en una Waveshare ESP32-S3-LCD-1.47B:<br/>
+  un firmware, varias “apps”, y datos en vivo desde tu Mac.
+</p>
 
-## Setup
+<p align="center">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-ESP32--S3-teal?style=flat-square" />
+  <img alt="Framework" src="https://img.shields.io/badge/framework-Arduino%20%2B%20PlatformIO-blue?style=flat-square" />
+  <img alt="Display" src="https://img.shields.io/badge/LCD-172×320%20ST7789-0e7490?style=flat-square" />
+  <img alt="License" src="https://img.shields.io/badge/license-use%20freely-slategray?style=flat-square" />
+</p>
 
-1. Copiá `include/secrets.h.example` → `include/secrets.h` con tu Wi‑Fi **2.4 GHz**
-2. `pio run -t upload`
-3. Hooks Cursor: `~/.cursor/hooks.json` → `POST /event`
-4. Uso Pro:
-   ```bash
-   ./tools/run-cursor-usage.sh
-   ```
-5. Teclado:
-   ```bash
-   ./tools/run-keyboard-presence.sh
-   ```
-   macOS: Accessibility → Python/Terminal.
-6. Trello:
-   ```bash
-   cp tools/trello.json.example ~/.cursor/trello.json
-   # key + token: https://trello.com/power-ups/admin
-   ./tools/run-trello.sh --once
-   ./tools/run-trello.sh --demo --once   # sin API
-   ```
-7. IP en `~/.cursor/esp32-buddy.json` si mDNS falla.
+---
 
-## Probar
+## Intro
 
-```bash
-curl "http://192.168.0.15/trello?np=2&nd=1&no=1&p0=Ship+LCD&d0=Pay+invoice&d0d=2d+late&d0o=1"
-./tools/run-trello.sh --demo --once
+Este proyecto es un lab de portfolio: la placa no es un blink más, es un **carrusel de views** en pantalla chica.
+
+Con el botón **BOOT** pasás entre modos. Cada view tiene su carpeta, su README y (si hace falta) un tool en Mac que le manda datos por HTTP — sin meter secretos en el repo.
+
+Ideal para mostrar en un portfolio: hardware real, firmware organizado, integraciones útiles y documentación lista para GitHub público.
+
+## Views
+
+| BOOT | View | Qué hace | Código |
+|:----:|------|----------|--------|
+| 1 | **Cursor Buddy** | Eventos del Agent + barras de uso Pro + globos | [`src/views/cursor_buddy/`](src/views/cursor_buddy/) |
+| 2 | **Keyboard Presence** | Tipado real, WPM, idle, heatmap tipo contributions | [`src/views/keyboard/`](src/views/keyboard/) |
+| 3 | **Trello Buddy** | In Progress + vencimientos / overdue | [`src/views/trello/`](src/views/trello/) |
+
+```text
+BOOT → Cursor → Keys → Trello → …
+RESET → reinicia el chip (no navega)
 ```
 
-Avisos: uso Pro ≥95% → `quota!`. Cards overdue → muñeco serio + LED naranja.
+## Stack
+
+- **MCU:** ESP32-S3 (Waveshare LCD 1.47B, 16MB flash + 8MB PSRAM)
+- **UI:** ST7789 172×320 + sprites / canvas offscreen
+- **Sensores:** QMI8658 (IMU) para motion sutil del buddy
+- **Host tools:** Python pollers (`tools/*/`) → `POST /event` `/usage` `/keys` `/trello`
+
+## Quick start
+
+```bash
+cp include/secrets.h.example include/secrets.h   # Wi‑Fi 2.4 GHz only
+pio run -t upload
+```
+
+Pollers (Mac):
+
+```bash
+./tools/cursor_usage/run.sh --once
+./tools/keyboard_presence/run.sh --demo
+./tools/trello/run.sh --demo --once
+```
+
+La IP aparece en la LCD. Opcional: `~/.cursor/esp32-buddy.json`.
+
+## Estructura
+
+```text
+src/
+  main.cpp              # Wi‑Fi, HTTP, BOOT, loop
+  core/                 # pines + IMU
+  views/<name>/         # cada slide + README
+tools/<name>/           # pollers + README + run.sh
+docs/                   # architecture, security, ideas, assets
+.cursor/rules/          # steering para agentes
+```
+
+## Documentación
+
+| Doc | Contenido |
+|-----|-----------|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Mapa del sistema y cómo agregar views |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Secretos y checklist antes de hacer público |
+| [`docs/IDEAS.md`](docs/IDEAS.md) | Roadmap |
+| [`AGENTS.md`](AGENTS.md) | Notas para coding agents |
+| [`.cursor/rules/`](.cursor/rules/) | Reglas de steering |
+
+## Seguridad (portfolio / repo público)
+
+Listo para publicar si mantenés fuera del git:
+
+- `include/secrets.h` (Wi‑Fi)
+- `~/.cursor/trello.json` (API Trello)
+- tokens de Cursor (solo se leen en vivo, no se guardan aquí)
+
+Ver el checklist en [`docs/SECURITY.md`](docs/SECURITY.md).
+
+## Licencia
+
+Usá y forkeá libremente para labs y portfolio. Atribuí si te sirve.

@@ -1,0 +1,24 @@
+---
+description: Toda view nueva debe ser slide + carpeta + docs
+alwaysApply: true
+---
+
+# Nueva view = slide obligatorio
+
+Cada visual nueva en la LCD **debe** cumplirse como view del carrusel. No agregar pantallas sueltas en `main.cpp` sin carpeta.
+
+## Checklist (obligatorio)
+
+1. **Carpeta propia:** `src/views/<nombre>/` con el código de la view (draw, estado, sprites).
+2. **Documentación:** `src/views/<nombre>/README.md` (qué muestra, archivos, datos/endpoints, privacidad).
+3. **Slide en el carrusel:** agregar al `enum class Slide` en `src/main.cpp`, manejar BOOT (`Slide::Count`), banner, `draw` en el `loop`, LED si aplica.
+4. **Includes:** `-Isrc/views/<nombre>` en `platformio.ini`.
+5. **Índices:** actualizar tabla de views en `README.md` raíz y `docs/IDEAS.md` / `docs/ARCHITECTURE.md` si cambia el mapa.
+6. **Tool (si hay datos externos):** `tools/<nombre>/` con `README.md` + `run.sh` + `*.example` sin secretos; endpoint HTTP documentado.
+
+## Anti-patrones
+
+- Meter una UI nueva solo como funciones sueltas en `main.cpp` sin carpeta.
+- Olvidar registrarla en el `enum Slide` / BOOT.
+- Subir view sin README.
+- Hardcodear secretos en la view o el tool.

@@ -57,7 +57,7 @@ def load_buddy_url() -> str:
 def load_trello_cfg() -> dict:
     if not os.path.exists(CONFIG_PATH):
         raise RuntimeError(
-            f"Falta {CONFIG_PATH}. Crealo con key, token y board (ver tools/trello.json.example)."
+            f"Falta {CONFIG_PATH}. Crealo con key, token y board (ver tools/trello/trello.json.example)."
         )
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         cfg = json.load(f)
