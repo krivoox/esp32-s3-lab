@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.png" alt="ESP32-S3 Lab — desk companion firmware" width="100%" />
+  <img src="docs/assets/banner.jpg" alt="ESP32-S3 Lab — desk companion firmware" width="100%" />
 </p>
 
 <h1 align="center">ESP32-S3 Lab</h1>
